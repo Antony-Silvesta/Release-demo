@@ -1,4 +1,4 @@
-name: Selenium WebTest
+name: WebTest Workflow
 
 on:
   push:
@@ -12,34 +12,42 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      selenium:
-        image: selenium/standalone-chrome:latest
-        ports:
-          - 4444:4444
-
     steps:
+    - name: Set up job
+      run: echo "Setting up job"
+      
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.x
+        python-version: '3.x'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium
+        pip install -r requirements.txt  # Assuming you have a `requirements.txt` file
 
     - name: Run WebTest
       run: |
+        # Replace with the actual path if `webtest.py` is in a subfolder
         python webtest.py
-
+    
     - name: Save screenshots
-      if: always()
-      uses: actions/upload-artifact@v3  # Updated to v3
-      with:
-        name: selenium-screenshots
-        path: |
-          screenshot.png
+      if: success() || failure()
+      run: |
+        mkdir -p screenshots
+        cp *.png screenshots/
+        echo "Screenshots saved"
+
+    - name: Post Set up Python
+      run: echo "Python set up completed"
+
+    - name: Stop containers
+      run: echo "Stopping containers" # Only applicable if you're using containers
+
+    - name: Complete job
+      run: echo "Job complete"
+
+
