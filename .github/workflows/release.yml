@@ -1,51 +1,38 @@
-name: Create Release with Assets
+name: Create or Update Release
 
 on:
   push:
     tags:
-      - "v*"  # Triggers the workflow for tags that start with 'v'
+      - "v*"
 
 permissions:
-  contents: write  # Grants permission to write to repository contents
-  packages: write  # Grants permission to publish packages (if needed)
+  contents: write
 
 jobs:
   release:
-    name: Create Release
-    runs-on: ubuntu-latest  # Runs the job on the latest Ubuntu environment
+    name: Create or Update Release
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3  # Check out the repository code
+        uses: actions/checkout@v3
 
       - name: Set up GitHub CLI
-        uses: cli/cli@v3  # Set up GitHub CLI for use in the workflow
+        uses: cli/cli-action@v1
 
-      - name: Build Project (Optional)
-        run: |
-          echo "Building the project..."  # Replace with actual build commands
-          # For example, if you have a Python project, you might do:
-          # python setup.py bdist_wheel
-
-      - name: Create Release
+      - name: Create or Update Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub token for authentication
-          TAG: ${{ github.ref_name }}  # Get the tag name from the workflow context
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" \  # Create a new release using the GitHub CLI
-              --repo "$GITHUB_REPOSITORY" \  # Specify the repository
-              --title "${TAG#v}" \  # Use the tag as the release title (removing 'v' prefix)
-              --generate-notes  # Automatically generate release notes from commit messages
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release with tag $TAG already exists, updating release."
+            gh release edit "$TAG" \
+              --title "${TAG#v}" \
+              --generate-notes
+          else
+            echo "Creating new release with tag $TAG."
+            gh release create "$TAG" \
+              --title "${TAG#v}" \
+              --generate-notes
+          fi
 
-      - name: Upload Release Assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub token for authentication
-        run: |
-          echo "Uploading assets..."
-          # Replace with the paths to your asset files
-          if [[ -f "path/to/your/asset/file1" ]]; then
-            gh release upload "$TAG" path/to/your/asset/file1 --clobber
-          fi
-          if [[ -f "path/to/your/asset/file2" ]]; then
-            gh release upload "$TAG" path/to/your/asset/file2 --clobber
-          fi
-          # Add additional assets as needed
