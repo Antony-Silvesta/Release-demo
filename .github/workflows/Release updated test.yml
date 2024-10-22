@@ -62,13 +62,20 @@ jobs:
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          - name: Check Selenium availability
+          run: |
+            curl -sSL http://localhost:4444/wd/hub/status | jq .
+  
       - name: Run Selenium tests
         env:
             SELENIUM_URL: http://localhost:4444/wd/hub  # Selenium WebDriver URL
         run: |
-            # Make sure the Selenium test script is in your repository and the test runner (pytest or similar) is set up
-            pytest --maxfail=5 --disable-warnings > test_results.log  # Automatically runs your Selenium tests and logs output
-      
+              # Ensure pytest is installed
+              pip install pytest
+              # Run tests with verbose output for better diagnostics
+              pytest -v --maxfail=5 --disable-warnings > test_results.log
+  
       - name: Show test results log
         run: |
-            cat test_results.log  # Output the test results in the log for debugging purposes
+              cat test_results.log  # Output the test results in the log for debugging purposes
+  
