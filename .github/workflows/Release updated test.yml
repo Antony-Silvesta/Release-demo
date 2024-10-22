@@ -1,5 +1,4 @@
 name: Run Selenium Tests and Create Release
-
 on:
   push:
     branches:
@@ -8,11 +7,9 @@ on:
     branches:
       - main
   workflow_dispatch:
-
 permissions:
-  contents: write
-  actions: read
-
+  contents: write  # Grants permission to write to the repository
+  actions: read    # Grants permission to read actions
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -26,34 +23,35 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # Ensure requirements.txt is in the root
-
       - name: Check Docker version
-        run: docker --version
-
+        run: docker --version  # Check Docker version
       - name: Build Docker image
         run: |
           docker build -t my-selenium-app:latest .  # Build the Docker image
-
-      - name: Save Docker image
-        run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > selenium.xz
-
+      - name: Run Selenium tests
+        env:
+            SELENIUM_URL: http://localhost:4444/wd/hub
+        run: |
+            pytest --maxfail=5 --disable-warnings > test_results.log  # Run the Selenium tests and log output
+      - name: Compress Test Results
+        run: |
+          tar -cvf selenium.tar test_results.log  # Create a tar file from the log
+          xz selenium.tar  # Compress the tar file to .xz
+      - name: Save docker image
+        run: docker image save my-selenium-app:latest|xz -z -e -7 -T0 > selenium.xz
       - name: List Files
-        run: ls -la  # Verify that selenium.xz was created
-
+        run: ls -la  # List all files to verify if selenium.xz was created
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -64,30 +62,21 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
-
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: selenium.xz  # Path to the compressed Docker image
+          asset_path: selenium.xz  # Specify the path to your asset
           asset_name: selenium.xz
           asset_content_type: application/x-xz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check Selenium availability
-        run: |
-          curl -sSL http://localhost:4444/wd/hub/status | jq .
-
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure the token is set
       - name: Run Selenium tests
         env:
             SELENIUM_URL: http://localhost:4444/wd/hub  # Selenium WebDriver URL
         run: |
-            # Install pytest if it's not already included in the requirements
-            pip install pytest
-            # Run tests in verbose mode for more details
-            pytest --maxfail=5 --disable-warnings --verbose > test_results.log
-
+            # Make sure the Selenium test script is in your repository and the test runner (pytest or similar) is set up
+            pytest --maxfail=5 --disable-warnings > test_results.log  # Automatically runs your Selenium tests and logs output
       - name: Show test results log
         run: |
             cat test_results.log  # Output the test results in the log for debugging purposes
