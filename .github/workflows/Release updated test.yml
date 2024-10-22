@@ -62,8 +62,8 @@ jobs:
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          - name: Check Selenium availability
-          run: |
+      - name: Check Selenium availability
+        run: |
             curl -sSL http://localhost:4444/wd/hub/status | jq .
   
       - name: Run Selenium tests
