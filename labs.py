@@ -15,7 +15,7 @@ class WebTest:
     
     def open_page(self, url):
         self.driver.get(url)
-        sleep(3)
+        sleep(8)
         print(f"Opened page: {url}")
     
     def test_title(self, expected_title):
@@ -27,7 +27,7 @@ class WebTest:
         self.driver.find_element(By.ID, username_id).send_keys(username)
         self.driver.find_element(By.ID, password_id).send_keys(password)
         self.driver.find_element(By.CLASS_NAME, submit_button_class).click()
-        sleep(2)
+        sleep(10)
         print(f"Attempted login with username: {username}")
     
     def verify_element_by_text(self, by_type, identifier, expected_text):
