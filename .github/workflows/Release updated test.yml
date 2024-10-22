@@ -26,6 +26,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -74,11 +75,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Wait for Selenium to be ready
+        run: |
+          echo "Waiting for Selenium to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
+              echo "Selenium is ready!"
+              break
+            fi
+            echo "Selenium is not ready yet. Waiting..."
+            sleep 5
+          done
+
       - name: Run Selenium tests
         env:
             SELENIUM_URL: http://localhost:4444/wd/hub  # Selenium WebDriver URL
         run: |
             pytest -v --maxfail=5 --disable-warnings > test_results.log  # Run your Selenium tests and log output
+            cat test_results.log  # Output the test results to the console
+
 
     
 
