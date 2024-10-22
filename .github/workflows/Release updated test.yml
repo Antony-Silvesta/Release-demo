@@ -40,6 +40,10 @@ jobs:
         run: |
           docker build -t my-selenium-app:latest .  # Build the Docker image
       
+      - name: Compress Test Results
+        run: |
+          tar -cvf selenium.tar test_results.log  # Create a tar file from the log
+          xz selenium.tar  # Compress the tar file to .xz
       - name: Save docker image
         run: docker image save my-selenium-app:latest|xz -z -e -7 -T0 > selenium.xz
       - name: List Files
@@ -63,5 +67,8 @@ jobs:
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure the token is set
-
-
+      - name: Run Selenium tests
+        env:
+              SELENIUM_URL: http://localhost:4444/wd/hub
+        run: |
+              pytest --maxfail=5 --disable-warnings > test_results.log  # Run the Selenium tests and log output    
