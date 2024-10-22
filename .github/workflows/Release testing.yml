@@ -1,61 +1,44 @@
-on:
+name: Node.js CI
+
+on: 
   push:
-    tags:
-      - 'v*.*.*'  # Triggers only on version tags like v1.0.0
+    branches:
+      - main
 
 jobs:
-  build:
+  first-job:
     runs-on: ubuntu-latest
+    container: node:14  # Runs within a Node.js 14 container
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Check Node.js and npm version
+      - name: Check Node and npm version
+        run: |
+          node --version
+          npm --version
 
-    - name: Set up Node.js (example for a Node.js project)
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
+      # Step 2: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: |
-        cd path/to/your/project  # Change this to the correct directory
-        npm install
+      # Step 3: Set up Node.js (optional, since you're using container-based)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # You can remove or adjust this if you're using a specific container
 
-    - name: Build the project
-      run: |
-        cd path/to/your/project  # Change this to the correct directory
-        npm run build
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./Release-demo/Release-demo  # Adjust this directory if needed
 
-    - name: Run tests
-      run: |
-        cd path/to/your/project  # Change this to the correct directory
-        npm test
+      # Step 5: Run tests (optional)
+      - name: Run tests
+        run: npm test
+        working-directory: ./Release-demo/Release-demo  # Adjust this directory if needed
 
-  release:
-    needs: build  # Ensure build finishes successfully before this job
-    runs-on: ubuntu-latest
+      # Step 6: Build the project
+      - name: Build the project
+        run: npm run build
+        working-directory: ./Release-demo/Release-demo  # Adjust this directory if needed
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}  # Use the version tag pushed
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/my-project.zip  # Change this to the correct path
-        asset_name: my-project-v${{ github.ref }}.zip
-        asset_content_type: application/zip
