@@ -1,58 +1,93 @@
-name: Release
+name: Docker Image CI
 
 on:
   push:
-    tags:
-      - 'v*.*.*'  # Triggers only on version tags like v1.0.0
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    # Step to check out the repository
+    - uses: actions/checkout@v4
 
-    - name: Set up Node.js (example for a Node.js project)
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
+    # Step to log useful information before building
+    - name: Output environment details
+      run: |
+        echo "Branch Name: ${{ github.ref }}"
+        echo "Commit Hash: $(git rev-parse --short HEAD)"
+        echo "Workflow Run Number: ${{ github.run_number }}"
+        echo "Running on $(uname -s) version $(uname -r)"
+        echo "ACCESS_TOKEN_EMAIL_SERVICE is set"
 
-    - name: Install dependencies
-      run: npm install
+    # Step to build the Docker image
+    - name: Build the Docker image
+      env:
+        ACCESS_TOKEN_EMAIL_SERVICE: ${{ secrets.ACCESS_TOKEN_EMAIL_SERVICE }}
+      run: |
+        docker build . \
+        --file Dockerfile \
+        --tag frontend:$(git rev-parse --short HEAD) \
+        --compress \
+        --build-arg ACCESS_TOKEN_EMAIL_SERVICE=$ACCESS_TOKEN_EMAIL_SERVICE
 
-    - name: Build the project
-      run: npm run build
+    # Step to save the Docker image as a compressed file
+    - name: Save Docker image
+      run: |
+        docker image save frontend:$(git rev-parse --short HEAD) | xz -z -e -7 -T0 > frontend.xz
 
-    - name: Run tests
-      run: npm test
+    # Step to list the files in the current directory
+    - name: List out files
+      run: ls -lh
 
-  release:
-    needs: build  # Ensure build finishes successfully before this job
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Create GitHub Release
+    # Step to create a new release on GitHub
+    - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}  # Use the version tag pushed
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}_${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
         draft: false
         prerelease: false
 
-    - name: Upload Release Asset
+    # Step to upload the Docker image to the release
+    - name: Upload compressed Docker image to release
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/my-project.zip  # Specify the built file
-        asset_name: my-project-v${{ github.ref }}.zip
-        asset_content_type: application/zip
+        asset_path: frontend.xz
+        asset_name: frontend.xz
+        asset_content_type: application/x-xz
 
+    # Install Selenium dependencies for testing
+    - name: Set up Python and install Selenium
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip xvfb
+        wget -q "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
+        sudo apt-get install -y python3-pip
+        pip3 install selenium
+
+    # Download ChromeDriver
+    - name: Download and set up ChromeDriver
+      run: |
+        wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
+
+    # Step to run Selenium tests
+    - name: Run Selenium Tests
+      run: |
+        sudo Xvfb :99 -ac &
+        export DISPLAY=:99
+        python3 selenium_test.py  # Make sure your Selenium script is named selenium_test.py
