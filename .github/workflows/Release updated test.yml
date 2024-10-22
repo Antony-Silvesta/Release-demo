@@ -45,7 +45,7 @@ jobs:
         run: ls -la  # Verify that selenium.xz was created
       - name: Run Selenium Tests
         run: |
-          python -m unittest discover -s tests -p '*_test.py'  # Adjust according to your test structure
+          python -m unittest discover -s tests -p '*_labs.py'  # Adjust according to your test structure
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
