@@ -7,13 +7,11 @@ on:
     branches:
       - main
   workflow_dispatch:
-
 permissions:
   contents: write  # Grants permission to write to the repository
   actions: read    # Grants permission to read actions
-
 jobs:
-  test_and_release:
+  test:
     runs-on: ubuntu-latest
     services:
       selenium:
@@ -28,42 +26,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # Ensure requirements.txt is in the root
-
       - name: Check Docker version
         run: docker --version  # Check Docker version
-
       - name: Build Docker image
         run: |
           docker build -t my-selenium-app:latest .  # Build the Docker image
-
-      - name: Save Docker image
-        run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > selenium.xz
-
-      - name: List Files
-        run: ls -la  # List all files to verify if selenium.xz was created
-
-      # Updated section using `gh-release` instead of `actions/create-release`
-      - name: Create GitHub Release
+      
+      - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: actions/create-release@v1
         with:
           tag_name: v${{ github.run_number }}  # Use the run number as the version tag
-          name: Release ${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
-
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
@@ -73,8 +59,16 @@ jobs:
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure the token is set
-
-      # Selenium tests section
-      - name: Run Selenium tests
+          - name: Run Selenium tests
+        env:
+            SELENIUM_URL: http://localhost:4444/wd/hub
         run: |
-          python -m unittest discover -s tests/selenium_tests -p "*_test.py"  # Modify this pattern if your test files follow a different naming convention
+            pytest --maxfail=5 --disable-warnings > test_results.log  # Run the Selenium tests and log output
+      - name: Compress Test Results
+        run: |
+          tar -cvf selenium.tar test_results.log  # Create a tar file from the log
+          xz selenium.tar  # Compress the tar file to .xz
+      - name: Save docker image
+        run: docker image save my-selenium-app:latest|xz -z -e -7 -T0 > selenium.xz
+      - name: List Files
+        run: ls -la  # List all files to verify if selenium.xz was created
