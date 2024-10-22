@@ -39,11 +39,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t my-selenium-app:latest .  # Build the Docker image
-       # Run the Selenium tests and log output
-      - name: Compress Test Results
-        run: |
-          tar -cvf selenium.tar test_results.log  # Create a tar file from the log
-          xz selenium.tar  # Compress the tar file to .xz
+      
       - name: Save docker image
         run: docker image save my-selenium-app:latest|xz -z -e -7 -T0 > selenium.xz
       - name: List Files
