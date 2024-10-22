@@ -7,82 +7,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    services:
-      selenium:
-        image: selenium/standalone-chrome:latest
-        ports:
-          - 4444:4444
-        options: >-
-          --health-cmd "wget --spider --timeout=5 http://localhost:4444/wd/hub/status || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt  # Ensure requirements.txt is in the root
-      - name: Check Docker version
-        run: docker --version  # Check Docker version
-      - name: Build Docker image
-        run: |
-          docker build -t my-selenium-app:latest .  # Build the Docker image
-  release:
-    runs-on: ubuntu-latest
-    needs: test  # Wait for the test job to complete successfully
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ github.run_number }}  # Use the run number as the version tag
-          release_name: Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: selenium.xz  # Specify the path to your asset
-          asset_name: selenium.xz
-          asset_content_type: application/x-xz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure the token is set
-      - name: Wait for Selenium service
-        run: |
-            sleep 10  # Wait for the Selenium service to be ready (adjust as necessary)
-      - name: Run Selenium tests
-        env:
-            SELENIUM_URL: http://localhost:4444/wd/hub
-        run: |
-            pytest --maxfail=5 --disable-warnings > test_results.log  # Run the Selenium tests and log output
-New
-
-
-Jeba Shinba
-  1:13 PM
-name: Run Selenium Tests and Create Release
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
 permissions:
   contents: write  # Grants permission to write to the repository
   actions: read    # Grants permission to read actions
@@ -148,6 +72,7 @@ jobs:
             SELENIUM_URL: http://localhost:4444/wd/hub
         run: |
             pytest --maxfail=5 --disable-warnings > test_results.log  # Run the Selenium tests and log output
+
 
 
 
