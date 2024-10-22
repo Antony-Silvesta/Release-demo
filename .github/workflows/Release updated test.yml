@@ -43,9 +43,6 @@ jobs:
         run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > selenium.xz
       - name: List Files
         run: ls -la  # Verify that selenium.xz was created
-      - name: Run Selenium Tests
-        run: |
-          python -m unittest discover -s tests -p '*_test.py'
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -64,5 +61,22 @@ jobs:
           asset_name: selenium.xz
           asset_content_type: application/x-xz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Selenium tests
+        env:
+            SELENIUM_URL: http://localhost:4444/wd/hub  # Selenium WebDriver URL
+        run: |
+            # Make sure the Selenium test script is in your repository and the test runner (pytest or similar) is set up
+            pytest --maxfail=5 --disable-warnings > test_results.log  # Automatically runs your Selenium tests and logs output
+      - name: Show test results log
+        run: |
+            cat test_results.log  # Output the test results in the log for debugging purposes
+
+
+
+
+
+
+
+
 
