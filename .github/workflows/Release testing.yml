@@ -1,5 +1,3 @@
-name: Release
-
 on:
   push:
     tags:
@@ -19,13 +17,19 @@ jobs:
         node-version: '16'
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        cd path/to/your/project  # Change this to the correct directory
+        npm install
 
     - name: Build the project
-      run: npm run build
+      run: |
+        cd path/to/your/project  # Change this to the correct directory
+        npm run build
 
     - name: Run tests
-      run: npm test
+      run: |
+        cd path/to/your/project  # Change this to the correct directory
+        npm test
 
   release:
     needs: build  # Ensure build finishes successfully before this job
@@ -52,7 +56,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/my-project.zip  # Specify the built file
+        asset_path: ./dist/my-project.zip  # Change this to the correct path
         asset_name: my-project-v${{ github.ref }}.zip
         asset_content_type: application/zip
-
