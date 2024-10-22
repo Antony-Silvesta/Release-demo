@@ -1,43 +1,59 @@
-name: Node.js CI
+name: Release
 
-on: 
+# Trigger the workflow on push to any tag that starts with "v", e.g., v1.0.0
+on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
-  first-job:
+  build-and-release:
+    name: Build, Test, and Release
     runs-on: ubuntu-latest
-    container: node:14  # Runs within a Node.js 14 container
 
     steps:
-      # Step 1: Check Node.js and npm version
-      - name: Check Node and npm version
-        run: |
-          node --version
-          npm --version
+      # Checkout the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      # Step 2: Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v2
+      # Set up the environment (example for a Node.js project)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
-      # Step 3: Set the working directory
-      - name: Set working directory
-        run: echo "Working directory: $(pwd)"  # This helps debug the current directory structure
-
-      # Step 4: Install dependencies
-      - name: Install dependencies
+      # Install dependencies
+      - name: Install Dependencies
         run: npm install
-        working-directory: ./Release-demo  # Adjust this to the correct path to your package.json
 
-      # Step 5: Run tests (optional)
-      - name: Run tests
-        run: npm test
-        working-directory: ./Release-demo  # Adjust this to the correct path if needed
-
-      # Step 6: Build the project
-      - name: Build the project
+      # Build the project (adjust this step based on your build tool)
+      - name: Build the Project
         run: npm run build
-        working-directory: ./Release-demo  # Adjust this to the correct path if needed
 
+      # Run tests (optional but recommended)
+      - name: Run Tests
+        run: npm test
 
+      # Create GitHub Release
+      - name: Create GitHub Release
+        id: create_release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false  # Set to true if you want to create pre-releases
+
+      # Upload build artifact to the GitHub release
+      # Replace `dist/my-project.zip` with your actual build output
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/my-project.zip  # Specify your build output here
+          asset_name: my-project-v${{ github.ref }}.zip
+          asset_content_type: application/zip
+
+      # Optional: Generate a changelog for the release (if using conventional commits)
+      - name: Generate Changelog
+        uses: TriPSs/conventional-changelog-action@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
