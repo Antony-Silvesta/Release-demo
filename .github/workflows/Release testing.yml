@@ -21,24 +21,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 3: Set up Node.js (optional, since you're using container-based)
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'  # You can remove or adjust this if you're using a specific container
+      # Step 3: Set the working directory
+      - name: Set working directory
+        run: echo "Working directory: $(pwd)"  # This helps debug the current directory structure
 
       # Step 4: Install dependencies
       - name: Install dependencies
         run: npm install
-        working-directory: ./Release-demo/Release-demo  # Adjust this directory if needed
+        working-directory: ./Release-demo  # Adjust this to the correct path to your package.json
 
       # Step 5: Run tests (optional)
       - name: Run tests
         run: npm test
-        working-directory: ./Release-demo/Release-demo  # Adjust this directory if needed
+        working-directory: ./Release-demo  # Adjust this to the correct path if needed
 
       # Step 6: Build the project
       - name: Build the project
         run: npm run build
-        working-directory: ./Release-demo/Release-demo  # Adjust this directory if needed
+        working-directory: ./Release-demo  # Adjust this to the correct path if needed
+
 
