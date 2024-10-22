@@ -67,23 +67,7 @@ jobs:
         asset_name: frontend.xz
         asset_content_type: application/x-xz
 
-    # Install Selenium dependencies for testing
-    - name: Set up Python and install Selenium
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y wget unzip xvfb
-        wget -q "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
-        sudo apt-get install -y python3-pip
-        pip3 install selenium
-
-    # Download ChromeDriver
-    - name: Download and set up ChromeDriver
-      run: |
-        wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
+    
 
     # Step to run Selenium tests
     - name: Run Selenium Tests
