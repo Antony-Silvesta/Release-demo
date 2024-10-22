@@ -52,12 +52,13 @@ jobs:
       - name: List Files
         run: ls -la  # List all files to verify if selenium.xz was created
 
-      - name: Create Release
+      # Updated section using `gh-release` instead of `actions/create-release`
+      - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}  # Use the run number as the version tag
-          release_name: Release ${{ github.run_number }}
+          name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
         env:
@@ -73,8 +74,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure the token is set
 
-      # Updated command to discover tests correctly
+      # Selenium tests section
       - name: Run Selenium tests
         run: |
           python -m unittest discover -s tests/selenium_tests -p "*_test.py"  # Modify this pattern if your test files follow a different naming convention
-
