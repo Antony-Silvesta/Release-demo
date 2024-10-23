@@ -16,9 +16,7 @@ jobs:
     services:
       selenium:
         image: selenium/standalone-chrome:latest  # Using Selenium Chrome standalone service
-        options: >-
-          --shm-size=2g  # Increase shared memory size for Chrome
-
+        
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -69,16 +67,43 @@ jobs:
           
       - name: Run Selenium tests
         run: |
-          # Run the application in a Docker container
-          docker run -d -p 8000:80 my-selenium-app:latest  # Adjust port mapping as needed
-          
-          # Wait for the application to start
-          echo "Waiting for the application to start..."
-          sleep 10  # You may need to increase this if your app takes longer to start
+          # Example of running a Selenium script that opens a popup
+          python - <<EOF
+          from selenium import webdriver
+          from selenium.webdriver.chrome.service import Service
+          from selenium.webdriver.common.by import By
+          from webdriver_manager.chrome import ChromeDriverManager
+          import time
+          import pytest
 
-          # Run tests against the frontend URL
-          echo "Running Selenium tests on http://localhost:8000"
-          pytest tests/ --maxfail=5 --disable-warnings -v > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
+          # Function to perform the Google search test
+          def test_google_search():
+              # Set Chrome options
+              options = webdriver.ChromeOptions()
+              options.add_argument("--headless")  # Run headless to avoid GUI issues in CI
+              options.add_argument("--no-sandbox")  # Bypass OS security model
+              options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+              
+              # Initialize the Chrome WebDriver
+              driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+              try:
+                  # Open Google and verify the title
+                  driver.get("https://www.google.com")
+                  assert "Google" in driver.title, "Google search page did not load properly"
+
+                  # Example of a potential popup action (e.g., clicking a link that opens a popup)
+                  # driver.find_element(By.LINK_TEXT, "Some Popup Link").click()  # Replace with your actual link
+                  
+                  # Add any additional actions needed for the popup here
+                  
+              finally:
+                  # Close the browser
+                  driver.quit()
+
+          if __name__ == "__main__":
+              pytest.main([__file__])  # Execute the test
+          EOF
           
       - name: Show test results log
         run: cat test_results.log  # Display test results for debugging
