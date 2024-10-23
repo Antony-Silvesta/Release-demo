@@ -42,7 +42,7 @@ jobs:
         run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz  # Save the Docker image in compressed form
         
       - name: List Files
-        run: ls -la  # Verify that selenium.xz was created
+        run: ls -la  # Verify that image.xz was created
         
       - name: Create Release
         id: create_release
@@ -65,6 +65,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
+      - name: Start Frontend Application
+        run: |
+          # Replace this with the command to start your frontend application
+          docker run -d -p 3000:3000 my-frontend-app:latest  # Assuming the frontend runs on port 3000
+          
       - name: Run Selenium tests
         run: |
           pytest --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
@@ -77,3 +82,4 @@ jobs:
         with:
           name: test-results
           path: test_results.log  # Upload test results as an artifact for easier access
+
