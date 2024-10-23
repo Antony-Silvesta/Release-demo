@@ -16,7 +16,9 @@ jobs:
     services:
       selenium:
         image: selenium/standalone-chrome:latest  # Using Selenium Chrome standalone service
-        
+        options: >-
+          --shm-size=2g  # Increase shared memory size for Chrome
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -65,14 +67,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Start Frontend Application
-        run: |
-          # Replace this with the command to start your frontend application
-          docker run -d -p 3000:3000 my-frontend-app:latest  # Assuming the frontend runs on port 3000
-          
       - name: Run Selenium tests
         run: |
-          pytest --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
+          # Ensure the frontend is running, modify according to your setup
+          docker run -d -p 8000:80 my-selenium-app:latest  # Run the application in a Docker container
+          sleep 10  # Wait for the application to start
+
+          # Run tests against the frontend URL
+          pytest tests/ --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
           
       - name: Show test results log
         run: cat test_results.log  # Display test results for debugging
