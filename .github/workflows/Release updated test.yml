@@ -69,12 +69,16 @@ jobs:
           
       - name: Run Selenium tests
         run: |
-          # Ensure the frontend is running, modify according to your setup
-          docker run -d -p 8000:80 my-selenium-app:latest  # Run the application in a Docker container
-          sleep 10  # Wait for the application to start
+          # Run the application in a Docker container
+          docker run -d -p 8000:80 my-selenium-app:latest  # Adjust port mapping as needed
+          
+          # Wait for the application to start
+          echo "Waiting for the application to start..."
+          sleep 10  # You may need to increase this if your app takes longer to start
 
           # Run tests against the frontend URL
-          pytest tests/ --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
+          echo "Running Selenium tests on http://localhost:8000"
+          pytest tests/ --maxfail=5 --disable-warnings -v > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
           
       - name: Show test results log
         run: cat test_results.log  # Display test results for debugging
@@ -84,4 +88,3 @@ jobs:
         with:
           name: test-results
           path: test_results.log  # Upload test results as an artifact for easier access
-
