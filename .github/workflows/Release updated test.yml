@@ -65,10 +65,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Selenium tests and save results
+      - name: Run Selenium tests
         run: |
-          pytest -v > test_results.log  # Save the test result log to a file
-  
+          pytest -v > test_results.log  
+            
       - name: Display test results log
         run: cat test_results.log  # Output the test result log to GitHub Actions console
   
