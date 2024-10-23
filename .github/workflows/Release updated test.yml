@@ -70,39 +70,31 @@ jobs:
           # Example of running a Selenium script that opens a popup
           python - <<EOF
           from selenium import webdriver
-          from selenium.webdriver.chrome.service import Service
-          from selenium.webdriver.common.by import By
-          from webdriver_manager.chrome import ChromeDriverManager
-          import time
-          import pytest
 
-          # Function to perform the Google search test
-          def test_google_search():
-              # Set Chrome options
-              options = webdriver.ChromeOptions()
-              options.add_argument("--headless")  # Run headless to avoid GUI issues in CI
-              options.add_argument("--no-sandbox")  # Bypass OS security model
-              options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-              
-              # Initialize the Chrome WebDriver
-              driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+def test_google_search():
+    # Set Chrome options
+    options = webdriver.ChromeOptions()
 
-              try:
-                  # Open Google and verify the title
-                  driver.get("https://www.google.com")
-                  assert "Google" in driver.title, "Google search page did not load properly"
+    # Initialize the Chrome WebDriver
+    driver = webdriver.Chrome(options=options)  # This will launch a Chrome browser window
 
-                  # Example of a potential popup action (e.g., clicking a link that opens a popup)
-                  # driver.find_element(By.LINK_TEXT, "Some Popup Link").click()  # Replace with your actual link
-                  
-                  # Add any additional actions needed for the popup here
-                  
-              finally:
-                  # Close the browser
-                  driver.quit()
+    # Open Google and verify the title
+    driver.get("https://www.google.com")
+    assert "Google" in driver.title, "Google search page did not load properly"
+    
+    # Close the browser
+    driver.quit()
+          # You can perform actions on the popup here
+          # For example, you could switch to the popup window if needed
+          driver.switch_to.window(driver.window_handles[1])  # Switch to the popup window
+          # Perform actions in the popup
 
-          if __name__ == "__main__":
-              pytest.main([__file__])  # Execute the test
+          # Close the popup window and switch back
+          driver.close()  # Close the popup
+          driver.switch_to.window(driver.window_handles[0])  # Switch back to the main window
+
+          # Clean up
+          driver.quit()
           EOF
           
       - name: Show test results log
