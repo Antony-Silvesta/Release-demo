@@ -1,4 +1,4 @@
-name: Run Selenium Tests
+name: Run Selenium Tests 
 on:
   push:
     branches:
@@ -79,28 +79,27 @@ jobs:
           python - <<EOF
           from selenium import webdriver
           from selenium.webdriver.chrome.service import Service
+          from selenium.webdriver.chrome.options import Options
           from webdriver_manager.chrome import ChromeDriverManager
-
-          # Function to perform the Google search test
+          
           def test_google_search():
-              # Set Chrome options (non-headless mode to trigger frontend window)
-              options = webdriver.ChromeOptions()
-              options.add_argument("--start-maximized")  # Start browser maximized
-
-              # Initialize the Chrome WebDriver
+              # Set Chrome options
+              options = Options()
+              options.add_argument("--no-sandbox")  # Bypass OS security model
+              options.add_argument("--disable-dev-shm-usage")  # Overcome resource problems
+              
+              # Initialize the Chrome WebDriver (Non-headless mode to trigger frontend window)
               driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-              try:
-                  # Open Google and verify the title
-                  driver.get("https://www.google.com")
-                  assert "Google" in driver.title, "Google search page did not load properly"
-                  print("Test passed: Google search page loaded successfully.")
-              finally:
-                  # Close the browser
-                  driver.quit()
+              # Open Google and verify the title
+              driver.get("https://www.google.com")
+              assert "Google" in driver.title, "Google search page did not load properly"
+              
+              # Close the browser
+              driver.quit()
 
           if __name__ == "__main__":
-              test_google_search()  # Execute the test
+              test_google_search()
           EOF
 
       - name: Show test results
