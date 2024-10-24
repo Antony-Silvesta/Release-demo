@@ -1,12 +1,19 @@
 {
   "name": "release-demo",
   "version": "1.0.0",
-  "type": "module",  
   "scripts": {
-    "test": "mocha test.js"
+    "start": "node server.js",
+    "test": "mocha test.js",
+    "build": "webpack --mode production" 
+  },
+  "dependencies": {
+   
   },
   "devDependencies": {
-    "mocha": "^X.X.X",
-    "chai": "^X.X.X"
+    "mocha": "^9.1.0",
+    "webpack": "^5.58.0"
+    
   }
 }
+
+
