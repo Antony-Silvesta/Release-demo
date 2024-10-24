@@ -38,16 +38,16 @@ jobs:
 
       - name: Check Docker version
         run: docker --version
-          
+
       - name: Build Docker image
         run: docker build -t my-selenium-app:latest .  # Build the Docker image
-            
+
       - name: Save Docker image
         run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz  # Save the Docker image in compressed form
-          
+
       - name: List Files
         run: ls -la  # Verify that image.xz was created
-          
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -58,7 +58,7 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
-            
+
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
@@ -68,24 +68,19 @@ jobs:
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            
+
       - name: Run Selenium tests
         id: run_tests
-
         run: |
           python - <<EOF
           from selenium import webdriver
-          from selenium.webdriver.chrome.service import Service
-          from selenium.webdriver.chrome.options import Options
-          from webdriver_manager.chrome import ChromeDriverManager
+          from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
           def test_application():
-              options = Options()
-              options.add_argument("--no-sandbox")  # Bypass OS security model
-              options.add_argument("--disable-dev-shm-usage")  # Overcome resource problems
-              
               # Initialize WebDriver
-              driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+              capabilities = DesiredCapabilities.CHROME
+              capabilities['acceptInsecureCerts'] = True
+              driver = webdriver.chrome(options=options)
 
               try:
                   # Navigate to the built frontend URL
@@ -108,11 +103,11 @@ jobs:
 
       - name: Show test results
         run: echo "Selenium tests executed."
-          
+
       - name: Confirm test execution
         if: ${{ steps.run_tests.outcome == 'success' }}
         run: echo "Selenium tests executed successfully."
-  
+
       - name: Handle test failure
         if: ${{ steps.run_tests.outcome != 'success' }}
         run: |
