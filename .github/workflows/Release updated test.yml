@@ -76,35 +76,21 @@ jobs:
         id: run_tests
         run: |
           pytest --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking the pipeline
-          python - <<EOF
           from selenium import webdriver
-          from selenium.webdriver.chrome.service import Service
-          from selenium.webdriver.common.by import By
-          from webdriver_manager.chrome import ChromeDriverManager
-          import pytest
 
-          # Function to perform the Google search test
           def test_google_search():
-              # Set Chrome options
-              options = webdriver.ChromeOptions()
-              options.add_argument("--no-sandbox")  # Bypass OS security model
-              options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+          # Set Chrome options
+          options = webdriver.ChromeOptions()
 
-              # Initialize the Chrome WebDriver without headless mode
-              driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+          # Initialize the Chrome WebDriver
+          driver = webdriver.Chrome(options=options)  # This will launch a Chrome browser window
 
-              try:
-                  # Open Google and verify the title
-                  driver.get("https://www.google.com")
-                  assert "Google" in driver.title, "Google search page did not load properly"
-                  print("Test passed: Google search page loaded successfully.")
-              finally:
-                  # Close the browser
-                  driver.quit()
-
-          if __name__ == "__main__":
-              pytest.main([__file__])  # Execute the test
-          EOF
+          # Open Google and verify the title
+          driver.get("https://www.google.com")
+          assert "Google" in driver.title, "Google search page did not load properly"
+          
+          # Close the browser
+          driver.quit()
 
       - name: Show test results
         run: |
