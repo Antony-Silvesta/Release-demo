@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "js-yaml": "^4.1.0"
+  "name": "release-demo",
+  "version": "1.0.0",
+  "type": "module",  
+  "scripts": {
+    "test": "mocha test.js"
+  },
+  "devDependencies": {
+    "mocha": "^X.X.X",
+    "chai": "^X.X.X"
   }
 }
