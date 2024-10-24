@@ -67,9 +67,11 @@ jobs:
             asset_content_type: application/x-xz
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            
       - name: Verify installed packages
         run: |
           pip list  # List installed packages for debugging purposes
+          
       - name: Run Selenium tests
         id: run_tests
         run: |
@@ -85,11 +87,10 @@ jobs:
           def test_google_search():
               # Set Chrome options
               options = webdriver.ChromeOptions()
-              options.add_argument("--headless")  # Run in headless mode for CI/CD
               options.add_argument("--no-sandbox")  # Bypass OS security model
               options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-              # Initialize the Chrome WebDriver
+              # Initialize the Chrome WebDriver without headless mode
               driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
               try:
@@ -108,9 +109,10 @@ jobs:
       - name: Show test results
         run: |
           echo "Selenium tests executed."
+          
       - name: Confirm test execution
         if: ${{ steps.run_tests.outcome == 'success' }}
-        run: echo "Selenium tests with popup handling executed successfully."
+        run: echo "Selenium tests executed successfully."
   
       - name: Handle test failure
         if: ${{ steps.run_tests.outcome != 'success' }}
@@ -118,4 +120,3 @@ jobs:
             echo "Selenium tests failed. Please check the logs for details."
             echo "Error details:"
             cat $GITHUB_WORKSPACE/test_results.log || echo "No test results log found."
-
