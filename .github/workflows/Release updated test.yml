@@ -34,6 +34,10 @@ jobs:
         run: |
           npm install  # Install all project dependencies
 
+      - name: Install Webpack CLI
+        run: |
+          npm install --save-dev webpack-cli  # Install webpack-cli as a dev dependency
+
       - name: Build frontend
         run: |
           npm run build  # Build the frontend application
@@ -55,22 +59,22 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-            tag_name: v${{ github.run_number }}  # Use the run number as the version tag
-            release_name: Release ${{ github.run_number }}
-            draft: false
-            prerelease: false
+          tag_name: v${{ github.run_number }}  # Use the run number as the version tag
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
             
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: image.xz  # Path to the compressed Docker image
-            asset_name: image.xz
-            asset_content_type: application/x-xz
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: image.xz  # Path to the compressed Docker image
+          asset_name: image.xz
+          asset_content_type: application/x-xz
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
       - name: Run Selenium tests
         id: run_tests
@@ -116,4 +120,5 @@ jobs:
             echo "Selenium tests failed. Please check the logs for details."
             echo "Error details:"
             cat test_results.log || echo "No test results log found."
+
 
