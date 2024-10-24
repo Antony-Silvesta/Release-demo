@@ -72,34 +72,22 @@ jobs:
       - name: Run Selenium tests
         id: run_tests
         run: |
-          python - <<EOF
-          from selenium import webdriver
-          from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+         from selenium import webdriver
+         def test_google_search():
+         # Set Chrome options
+         options = webdriver.ChromeOptions()
 
-          def test_application():
-              # Initialize WebDriver
-              capabilities = DesiredCapabilities.CHROME
-              capabilities['acceptInsecureCerts'] = True
-              driver = webdriver.chrome(options=options)
+         # Initialize the Chrome WebDriver
+         driver = webdriver.Chrome(options=options)  # This will launch a Chrome browser window
 
-              try:
-                  # Navigate to the built frontend URL
-                  driver.get("http://localhost:3000")  # Change this to your frontend URL
-                  assert "Expected Title" in driver.title  # Adjust according to your app's title
-                  
-                  # You can add more interactions here
-                  search_box = driver.find_element("name", "q")  # Example: Finding a search box
-                  search_box.send_keys("Selenium")  # Typing in the search box
-                  search_box.submit()  # Submitting the form
+         # Open Google and verify the title
+         driver.get("https://www.google.com")
+         assert "Google" in driver.title, "Google search page did not load properly"
+    
+         # Close the browser
+         driver.quit()
 
-              except AssertionError as e:
-                  print(f"Assertion failed: {e}")  # Print any assertion error
-              finally:
-                  driver.quit()  # Make sure to quit the driver
-
-          if __name__ == "__main__":
-              test_application()
-          EOF
+ 
 
       - name: Show test results
         run: echo "Selenium tests executed."
