@@ -69,32 +69,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-     
       - name: Run Google Search Test
         id: run_tests
         run: |
-         python - <<EOF
-         from selenium import webdriver
+          python - <<EOF
+          from selenium import webdriver
 
           def test_google_search():
-          # Set Chrome options
-          options = webdriver.ChromeOptions()
-          options.add_argument("--no-sandbox")  # Bypass OS security model
-          options.add_argument("--disable-dev-shm-usage")  # Overcome resource problems
+              # Set Chrome options
+              options = webdriver.ChromeOptions()
+              options.add_argument("--no-sandbox")  # Bypass OS security model
+              options.add_argument("--disable-dev-shm-usage")  # Overcome resource problems
 
-            # Initialize the Chrome WebDriver
-            driver = webdriver.Chrome(options=options)  # This will launch a Chrome browser window
+              # Initialize the Chrome WebDriver
+              driver = webdriver.Chrome(options=options)  # This will launch a Chrome browser window
 
-            # Open Google and verify the title
-            driver.get("https://www.google.com")
-            assert "Google" in driver.title, "Google search page did not load properly"
+              # Open Google and verify the title
+              driver.get("https://www.google.com")
+              assert "Google" in driver.title, "Google search page did not load properly"
 
-            # Close the browser
-            driver.quit()
+              # Close the browser
+              driver.quit()
 
-          if __name__ == "__main__":
+              if __name__ == "__main__":
               test_google_search()
-          EOF
+              EOF
       
       - name: Show test results
         run: echo "Selenium tests executed."
