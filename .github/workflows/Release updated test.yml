@@ -72,7 +72,7 @@ jobs:
       - name: Run Google Search Test
         id: run_tests
         run: |
-          python -h --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking pipeline
+          python --maxfail=5 --disable-warnings > test_results.log || exit 0  # Run tests and avoid breaking pipeline
             
       - name: Show test results
         run: echo "Selenium tests executed."
