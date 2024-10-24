@@ -14,4 +14,4 @@ def test_google_search():
     # Close the browser
     driver.quit()
 
-# No need to manually call test_google_search(), pytest will discover and run this test
+
