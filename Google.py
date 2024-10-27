@@ -5,7 +5,7 @@ def test_google_search():
     options = webdriver.ChromeOptions()
 
     # Initialize the Chrome WebDriver
-    driver = webdriver.Chrome(options=options)  # This will launch a Chrome browser window
+    driver = webdriver.Chrome(options=options)  
 
     # Open Google and verify the title
     driver.get("https://www.google.com")
