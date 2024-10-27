@@ -30,8 +30,14 @@ jobs:
         with:
           node-version: '18'  # Node.js version for compatibility
 
+      - name: Clear npm cache
+        run: npm cache clean --force    
+
       - name: Install Node.js dependencies
         run: npm install  # Install all project dependencies
+
+      - name: Install Mocha Globally
+        run: npm install -g mocha
 
       - name: Build frontend
         run: npm run build  # Build the frontend application
